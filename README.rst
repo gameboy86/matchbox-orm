@@ -3,8 +3,8 @@ matchbox
 ********
 
 .. image:: https://i.imgur.com/nvYOAmX.png
-   :height: 100
-   :width: 200
+   :height: 50
+   :width: 100
    :alt: alternate text
 
 
