@@ -72,7 +72,7 @@ Document can be update by two ways: override or update. Example below will overr
     >> t.save()
 
 
-This will update ony age field in document
+This will update only age field in document
 
 
 .. code-block:: python
