@@ -166,6 +166,19 @@ class InsertQuery(QueryBase):
         return self.raw_execute()
 
 
+class UpdateQuery(InsertQuery):
+
+    def raw_execute(self):
+        kwargs = self.parse_insert()
+        _id = kwargs.pop('id')
+        db.conn.collection(
+            self.model._meta.db_table
+        ).document(
+            _id
+        ).update(kwargs)
+        return _id
+
+
 class DeleteQuery:
     def __init__(self, query):
         self.query = query
