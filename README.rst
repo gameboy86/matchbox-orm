@@ -2,6 +2,11 @@
 matchbox
 ********
 
+.. image:: https://i.imgur.com/nvYOAmX.png
+   :height: 100
+   :width: 200
+   :alt: alternate text
+
 
 ``matchbox`` is orm package for google ``Cloud Firestore``. It is in development.
 
