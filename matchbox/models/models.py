@@ -70,15 +70,34 @@ class Model(metaclass=BaseModel):
             for f in self._meta.fields.values()
         }
 
-    def save(self):
-        insert = queries.InsertQuery(
-            self.__class__,
-            **self.get_fields()
-        )
-        self.id = insert.execute()
+    def save(self, update_fields=None):
+        if update_fields is not None:
+            self._update(update_fields)
+        else:
+            self._save()
 
     def delete(self):
         queries.DeleteQuery(
             queries.GetQuery(self.__class__, self.id).make_query()
         ).execute()
         self.id = None
+
+    def _update(self, update_fields):
+        up_fields = self._get_update_fields(update_fields)
+        print(up_fields)
+        queries.UpdateQuery(self.__class__, **up_fields).execute()
+
+    def _save(self):
+        queries.InsertQuery(
+            self.__class__,
+            **self.get_fields()
+        ).execute()
+
+    def _get_update_fields(self, update_fields):
+        if type(update_fields) not in [list, tuple]:
+            raise AttributeError('update_fields must be list or tuple')
+        return {
+            k: v
+            for k, v in self.get_fields().items()
+            if k in update_fields + ['id']
+        }
