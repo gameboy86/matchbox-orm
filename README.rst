@@ -23,6 +23,10 @@ Connect to Firestore
 Model
 *****
 
+
+Create
+------
+
 .. code-block:: python
 
     >> from matchbox.models import *
@@ -55,6 +59,28 @@ Another way to create model is use manager method `create`:
 
     >> Test.objects.create(name='Test', age=29)
     <Test: 33eba5fd53244e38aa1b4951f104ec3c>
+
+Update
+------
+
+Document can be update by two ways: override or update. Example below will override whole document
+
+.. code-block:: python
+
+    >> t = Test.objects.get(id='eba5fd53244e38aa1b4951f104ec3c')
+    >> t.age = 53
+    >> t.save()
+
+
+This will update ony age field in document
+
+
+.. code-block:: python
+
+    >> t = Test.objects.get(id='eba5fd53244e38aa1b4951f104ec3c')
+    >> t.age = 32
+    >> t.save(update_fields=['age'])
+
 
 ------
 Fields
