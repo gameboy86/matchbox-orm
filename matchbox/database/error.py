@@ -1,0 +1,3 @@
+
+class DBDoesNotinitialized(Exception):
+    pass

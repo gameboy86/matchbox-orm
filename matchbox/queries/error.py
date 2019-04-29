@@ -1,0 +1,4 @@
+
+class DocumentDoesNotExists(Exception):
+    pass
+
