@@ -313,6 +313,11 @@ you can filter on them (there are mapped to < - le, <= - lte, > - gr, >= - gte, 
     >> u = User.objects.filter(name__eq='Michael', evaluations__eq=[4,4,2]).one()
     >> print(u.id, u.age, u.name, u.evaluations)
     2dce37628c4345b0a9d1a721265984b4 20 Michael [4, 4, 2]
+    >> list(User.objects.filter(evaluations__contains=3))
+    >> u = User.objects.filter(evaluations__contains=3).one()
+    >> u.id, u.name, u.evaluations
+    ('389ac1ca88614d5fa5e53facb1249576', 'Michael', [2, 3, 5])
+
 
 You can also filter by ReferenceField
 
