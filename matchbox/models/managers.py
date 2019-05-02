@@ -6,7 +6,6 @@ class ManagerDescriptor:
         self.manager = manager
 
     def __get__(self, instance, cls=None):
-        print(instance, cls)
         if instance is not None:
             raise AttributeError(
                 "Manager isn't accessible via %s instances" % cls.__name__

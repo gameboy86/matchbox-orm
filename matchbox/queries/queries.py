@@ -20,7 +20,6 @@ class QuerySet:
         return FilterQuery(self.model, **kwargs).get()
 
     def create(self, **kwargs):
-        print(kwargs)
         model = self.model(**kwargs)
         model.save()
         return model
