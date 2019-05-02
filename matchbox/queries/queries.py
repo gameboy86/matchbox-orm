@@ -5,7 +5,7 @@ from matchbox.queries import error
 from matchbox.queries import queries_result
 
 
-class Query:
+class QuerySet:
 
     def __init__(self, model):
         self.model = model
@@ -16,13 +16,14 @@ class Query:
     def filter(self, **kwargs):
         return FilterQuery(self.model, **kwargs)
 
+    def get(self, **kwargs):
+        return FilterQuery(self.model, **kwargs).get()
+
     def create(self, **kwargs):
+        print(kwargs)
         model = self.model(**kwargs)
         model.save()
         return model
-
-    def get(self, id):
-        return GetQuery(self.model, id).execute()
 
     def delete(self):
         FilterQuery(self.model).delete()
@@ -31,31 +32,6 @@ class Query:
 class QueryBase:
     def __init__(self, model):
         self.model = model
-
-    def get_field_cls(self, field_name):
-        return self.model._meta.get_field(field_name)
-
-
-class GetQuery(QueryBase):
-    def __init__(self, model, _id):
-        super().__init__(model)
-        self.id = _id
-
-    def make_query(self):
-        return db.conn.collection(
-            self.model._meta.db_table
-        ).document(self.id)
-
-    def raw_execute(self):
-        return self.make_query().get()
-
-    def execute(self):
-        rq = self.raw_execute()
-        if rq.exists:
-            return queries_result.QueryResultWrapper.model_from_dict(
-                self.model, rq
-            )
-        raise error.DocumentDoesNotExists(self.id)
 
 
 class FilterQuery(QueryBase):
@@ -79,14 +55,15 @@ class FilterQuery(QueryBase):
         wheres = []
         for fo, vl in self.select_query.items():
             s_fs = fo.split(self.query_separator)
-            fs, o = s_fs[:-1], s_fs[-1]
+            if len(s_fs) == 1 or s_fs[-1] not in self.operations:
+                fs, o = s_fs, 'eq'
+            else:
+                fs, o = s_fs[:-1], s_fs[-1]
             wheres.append(('.'.join(fs), self.operations[o], vl))
         return wheres
 
     def make_query(self):
         bsq = db.conn.collection(self.model._meta.db_table)
-        if 'id' in self.select_query:
-            raise Exception("Can't filter using id")
         for w in self.parse_where():
             bsq = bsq.where(*w)
         if self.n_limit:
@@ -123,20 +100,28 @@ class FilterQuery(QueryBase):
 
     def delete(self):
         bsq = self.make_query()
-        DeleteQuery(bsq).execute()
+        return DeleteQuery(bsq).execute()
 
     def filter(self, **kwargs):
         self.select_query.update(kwargs)
         return self
 
-    def one(self):
-        try:
-            return queries_result.QueryResultWrapper.model_from_dict(
-                self.model,
-                next(self.make_query().stream())
+    def get(self, **kwargs):
+        self.select_query.update(kwargs)
+        res = list(self.execute())
+        if not res:
+            raise error.DocumentDoesNotExists(
+                '{} matching query does not exist'.format(
+                    self.model.__name__
+                )
             )
-        except StopIteration:
-            return None
+        if len(res) > 1:
+            raise error.MultipleObjectsReturned(
+                'get() returned more than one {} -- it returned {}!'.format(
+                    self.model.__name__, len(res)
+                )
+            )
+        return res[0]
 
 
 class InsertQuery(QueryBase):
@@ -144,6 +129,31 @@ class InsertQuery(QueryBase):
     def __init__(self, model, **kwargs):
         super().__init__(model)
         self.insert_query = kwargs
+
+    def get_ref(self, id=None):
+        return db.conn.collection(
+            self.model._meta.db_table
+        ).document(id)
+
+    def parse_insert(self):
+        out = {}
+        for k, f in self.model._meta.fields.items():
+            val = self.insert_query.get(k)
+            out[k] = f.lookup_value(None, val)
+        return out
+
+    def raw_execute(self):
+        kwargs = self.parse_insert()
+        ref = self.get_ref(kwargs.get('id'))
+        kwargs['id'] = ref.id
+        ref.set(kwargs)
+        return self.model(**kwargs)
+
+    def execute(self):
+        return self.raw_execute()
+
+
+class UpdateQuery(InsertQuery):
 
     def parse_insert(self):
         out = {}
@@ -154,38 +164,17 @@ class InsertQuery(QueryBase):
 
     def raw_execute(self):
         kwargs = self.parse_insert()
-        _id = kwargs.pop('id')
-        db.conn.collection(
-            self.model._meta.db_table
-        ).document(
-            _id
-        ).set(kwargs)
-        return _id
-
-    def execute(self):
-        return self.raw_execute()
-
-
-class UpdateQuery(InsertQuery):
-
-    def raw_execute(self):
-        kwargs = self.parse_insert()
-        _id = kwargs.pop('id')
-        db.conn.collection(
-            self.model._meta.db_table
-        ).document(
-            _id
-        ).update(kwargs)
-        return _id
+        ref = self.get_ref(kwargs['id'])
+        ref.update(kwargs)
 
 
 class DeleteQuery:
     def __init__(self, query):
         self.query = query
 
-    def delete_collection(self, batch_size):
+    def delete_collection(self, batch_size=100):
         try:
-            docs = self.query.limit(10).get()
+            docs = self.query.limit(batch_size).get()
         except AttributeError:
             self.query.delete()
             return
@@ -200,4 +189,4 @@ class DeleteQuery:
             return self.delete_collection(batch_size)
 
     def execute(self):
-        self.delete_collection(10)
+        self.delete_collection()

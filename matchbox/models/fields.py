@@ -1,5 +1,6 @@
 import datetime
 import google
+
 from matchbox.database import db
 from matchbox.models import utils as models_utils
 from matchbox.models import field_validator
@@ -14,6 +15,7 @@ class Field:
         self.field_validator = field_validator.FieldValidator(
             self, kwargs or {}
         )
+        self.name = None
 
     def add_to_class(self, klass, name):
         self.name = name
@@ -34,9 +36,10 @@ class Field:
 
 class IDField(Field):
 
-    @staticmethod
-    def random_id():
-        return models_utils.generate_id()
+    def lookup_value(self, lookup_type, value):
+        if value is None:
+            return value
+        return self.db_value(value)
 
     def db_value(self, value):
         try:
