@@ -1,5 +1,5 @@
 ********
-matchbox
+Matchbox
 ********
 
 .. image:: https://i.imgur.com/nvYOAmX.png
@@ -8,7 +8,15 @@ matchbox
    :alt: alternate text
 
 
-``matchbox`` is orm package for google ``Cloud Firestore``. It is in development.
+:Details: Matchbox is orm package for Google Firestore.
+:Repository: https://github.com/gameboy86/matchbox
+:Author: Maciej Gębarski (https://github.com/gameboy86)
+
+
+Details
+=======
+``Matchbox`` is a Python Object-Relational Mapper for Google Firestore.
+It is in development.
 
 
 Connect to Firestore
