@@ -11,6 +11,7 @@ class BaseModel(type):
 
         class Meta:
             fields = {}
+            managers_map = {}
 
             def __init__(self, model_class):
                 self.model_class = model_class
@@ -20,19 +21,31 @@ class BaseModel(type):
                     return self.fields[f_name]
                 raise AttributeError('Field name %s not found' % f_name)
 
+            def add_manager(self, manager):
+                self.managers_map[manager.name] = manager
+
         _meta = Meta(cls)
         setattr(cls, '_meta', _meta)
 
         _meta.db_table = utils.convert_name(cls.__name__.lower())
 
         has_primary_key = False
+
         for name, attr in cls.__dict__.items():
+            if isinstance(attr, managers.BaseManager):
+                attr.contribute_to_class(cls, name)
+
             if not isinstance(attr, fields.Field):
                 continue
+
             attr.add_to_class(cls, name)
             _meta.fields[attr.name] = attr
             if isinstance(attr, fields.IDField):
                 has_primary_key = True
+
+        if 'objects' not in cls.__dict__:
+            manager = managers.Manager()
+            manager.contribute_to_class(cls, 'objects')
 
         if not has_primary_key:
             pk = fields.IDField()
@@ -48,17 +61,10 @@ class BaseModel(type):
 
 class Model(metaclass=BaseModel):
 
-    objects = managers.ManagerDescriptor()
-
     def __init__(self, *args, **kwargs):
-        if 'id' not in kwargs:
-            self.id = self._meta.get_field('id').random_id()
+        self.id = None
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-        for f in self._meta.fields.values():
-            if f.field_validator.default and not getattr(self, f.name):
-                setattr(self, f.name, f.field_validator.default)
 
     @classmethod
     def collection_name(cls):
@@ -78,20 +84,25 @@ class Model(metaclass=BaseModel):
 
     def delete(self):
         queries.DeleteQuery(
-            queries.GetQuery(self.__class__, self.id).make_query()
+            queries.FilterQuery(
+                self.__class__,
+            ).get(id=self.id)
         ).execute()
         self.id = None
 
     def _update(self, update_fields):
-        up_fields = self._get_update_fields(update_fields)
-        print(up_fields)
-        queries.UpdateQuery(self.__class__, **up_fields).execute()
+        queries.UpdateQuery(
+            self.__class__,
+            **self._get_update_fields(
+                update_fields
+            )
+        ).execute()
 
     def _save(self):
-        queries.InsertQuery(
+        self.id = queries.InsertQuery(
             self.__class__,
             **self.get_fields()
-        ).execute()
+        ).execute().id
 
     def _get_update_fields(self, update_fields):
         if type(update_fields) not in [list, tuple]:

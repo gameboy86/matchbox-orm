@@ -247,7 +247,6 @@ Query
 objects.get
 ===========
 
-objects.get only accept document id:
 
 .. code-block:: python
 
@@ -328,20 +327,20 @@ you can filter on them (there are mapped to < - le, <= - lte, > - gr, >= - gte, 
     <User: 389ac1ca88614d5fa5e53facb1249576>]
     >> User.objects.filter(age__gte=10, age__lte=15)
     [<User: 348bf6888d1e4d22afd29385f8c1a330>]
-    >> u = User.objects.filter(age__gte=10, age__lte=15).one()
+    >> u = User.objects.filter(age__gte=10, age__lte=15).get()
     >> print(u.age)
     15
-    >> list(User.objects.filter(name__eq='Michael'))
+    >> list(User.objects.filter(name='Michael'))
     [<User: 2dce37628c4345b0a9d1a721265984b4>,
     <User: 389ac1ca88614d5fa5e53facb1249576>]
-    >> list(User.objects.filter(name__eq='Michael').filter(evaluations__eq=[4,4,2])) # or list(User.objects.filter(name__eq='Michael', evaluations__eq=[4,4,2]))
+    >> list(User.objects.filter(name='Michael').filter(evaluations=[4,4,2])) # or list(User.objects.filter(name='Michael', evaluations=[4,4,2]))
     [<User: 2dce37628c4345b0a9d1a721265984b4>]
-    >> u = User.objects.filter(name__eq='Michael', evaluations__eq=[4,4,2]).one()
+    >> u = User.objects.filter(name='Michael', evaluations=[4,4,2]).get()
     >> print(u.id, u.age, u.name, u.evaluations)
     2dce37628c4345b0a9d1a721265984b4 20 Michael [4, 4, 2]
     >> list(User.objects.filter(evaluations__contains=3))
     [<User: 389ac1ca88614d5fa5e53facb1249576>]
-    >> u = User.objects.filter(evaluations__contains=3).one()
+    >> u = User.objects.filter(evaluations__contains=3).get()
     >> u.id, u.name, u.evaluations
     ('389ac1ca88614d5fa5e53facb1249576', 'Michael', [2, 3, 5])
 
@@ -357,10 +356,10 @@ You can also filter by ReferenceField
              def __unicode__(self):
                 return self.id
 
-    >> c = Class.objects.create(name='A1', user=User.objects.all().one())
+    >> c = Class.objects.create(name='A1', user=User.objects.all().get())
     >> c.user.id, c.user.name
     '2dce37628c4345b0a9d1a721265984b4', 'Michael'
-    >> Class.objects.filter(user__eq=u).one()
+    >> Class.objects.filter(user=u).get()
     <Class: c3728ca35d25414794f6071d3acb3e2b>
 
 
@@ -385,12 +384,63 @@ We can delete document by instance or by filter.
 
 .. code-block:: python
 
-    >> u = User.objects.all().one()
+    >> u = User.objects.all().get()
     >> u.delete()
-    >> User.objects.filter(name__eq='Alex').delete()
+    >> User.objects.filter(name='Alex').delete()
 
     Delete whole collection:
 
     >> User.objects.delete()
     or
     >> User.objects.filter().delete()
+
+--------
+Managers
+--------
+
+Like in Django we can create own `Managers`. For example:
+
+.. code-block:: python
+
+    >> class User(models.Model):
+             name = TextField()
+             evaluations = ListField()
+             age = IntegerField(default=20)
+
+             def __unicode__(self):
+                return self.id
+
+    >> class AManager(Manager):
+            def get_queryset(self):
+               return super().get_queryset().filter(active__eq=True)
+
+
+    >> class DManager(Manager):
+             def get_queryset(self):
+                return super().get_queryset().filter(active__eq=False)
+
+
+    >> class Class(models.Model):
+             name = TextField()
+             user = ReferenceField(User)
+             active = BooleanField()
+
+             a_objects = AManager()
+             f_objects = DManager()
+
+             def __unicode__(self):
+                return self.id
+
+    >> c1 = Class.objects.create(active=True, name='DD21')
+    >> c2 = Class.objects.create(active=True, name='DD22')
+    >> c3 = Class.objects.create(active=False, name='CC22')
+    >> c4 = Class.objects.create(active=False, name='CC11')
+    >> list(Class.objects.all())
+    [<Class: 96Ww50qJVh53v46iyOPP>,
+     <Class: cjGlGWM8RiJqcAQLGvXK>,
+     <Class: pgvWsXY47GrYO4Eiyp2W>,
+     <Class: vHZMVjda2wNEVDmoxTe2>]
+    >> list(Class.f_objects.all())
+    [<Class: pgvWsXY47GrYO4Eiyp2W>, <Class: vHZMVjda2wNEVDmoxTe2>]
+    >> list(Class.a_objects.all())
+    [<Class: 96Ww50qJVh53v46iyOPP>, <Class: cjGlGWM8RiJqcAQLGvXK>]
