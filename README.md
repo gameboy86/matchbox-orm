@@ -16,7 +16,7 @@
 It is in development.
 
 
-#### Installing
+### Installing
 
 Until `Matchbox` will be in development, it can only by installed using github 
 
@@ -113,7 +113,8 @@ If we want update only specific fields, we can use `update_fields` parameter in
  * GeoPointField
  * ReferenceField
 
-##### Attributes
+#### Attributes
+
 
 **Available attributes for all fields:**
  * blank (If True empty fields will save null in DB.)
@@ -137,7 +138,7 @@ class Test2(models.Model):
 25 None
 ```
 
-##### IDField
+#### IDField
 
 
 In our example Test model we don't specify id field. It have been added automatically:
@@ -163,7 +164,7 @@ If you want you can specify your own id:
 If you change id and save, new document will be create in Firestore.
 
 
-##### TimeStampField
+#### TimeStampField
 
 ```python
 class TimeStampFieldExample(models.Model):
@@ -183,7 +184,7 @@ class TimeStampFieldExample(models.Model):
 datetime.datetime(2019, 5, 4, 16, 42, 34, 583953, tzinfo=datetime.timezone(datetime.timedelta(0), '+00:00'))
 ```
 
-##### ListField
+#### ListField
 
 ```python
 class ListFieldExample(models.Model):
@@ -202,7 +203,7 @@ class ListFieldExample(models.Model):
 [1, 2, 3, 4, 5]
 ```
 
-##### MapField
+#### MapField
 
 ```python
 class MapFieldExample(models.Model):
@@ -223,7 +224,7 @@ class MapFieldExample(models.Model):
 {'b': 2, 'c': {'a': 1}, 'a': 1}
 ```
 
-##### GeoPointField
+#### GeoPointField
 
 
 To save GeoPoint data you must use class `GeoPointValue`
@@ -248,7 +249,7 @@ class GeoPointFieldExample(models.Model):
 52.2297
 ```
 
-##### ReferenceField
+#### ReferenceField
 
 
 One of field offered by FireStore is Reference. In one document you can store
