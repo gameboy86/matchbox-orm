@@ -27,7 +27,7 @@ Until `Matchbox` will be in development, it can only by installed using github
 ## Usage
 
 
-#### Connect to Firestore
+### Connect to Firestore
 
 More info, how to generate JSON file with private key you will find on [Get started with Cloud Firestore](https://firebase.google.com/docs/firestore/quickstart)
 
@@ -36,9 +36,9 @@ from matchbox import database
 database.db_initialization('path/to/serviceAccount.json')
 ```
 
-#### Model
+### Model
 
-##### Create
+#### Create
 
 ```python
 from matchbox.models import *
@@ -78,7 +78,7 @@ Another way to create model is use manager `create` method:
 <Test: 33eba5fd53244e38aa1b4951f104ec3c>
 ```
 
-##### Update
+#### Update
 
 
 Document can be update by two ways: override or update. 
@@ -99,7 +99,7 @@ If we want update only specific fields, we can use `update_fields` parameter in
 >> t.save(update_fields=['age'])
 ```
 
-##### Fields
+#### Fields
 
 
 **Available fields:**
@@ -113,7 +113,7 @@ If we want update only specific fields, we can use `update_fields` parameter in
  * GeoPointField
  * ReferenceField
 
-###### Attributes
+##### Attributes
 
 **Available attributes for all fields:**
  * blank (If True empty fields will save null in DB.)
@@ -137,7 +137,7 @@ class Test2(models.Model):
 25 None
 ```
 
-###### IDField
+##### IDField
 
 
 In our example Test model we don't specify id field. It have been added automatically:
@@ -163,7 +163,7 @@ If you want you can specify your own id:
 If you change id and save, new document will be create in Firestore.
 
 
-###### TimeStampField
+##### TimeStampField
 
 ```python
 class TimeStampFieldExample(models.Model):
@@ -183,7 +183,7 @@ class TimeStampFieldExample(models.Model):
 datetime.datetime(2019, 5, 4, 16, 42, 34, 583953, tzinfo=datetime.timezone(datetime.timedelta(0), '+00:00'))
 ```
 
-###### ListField
+##### ListField
 
 ```python
 class ListFieldExample(models.Model):
@@ -202,7 +202,7 @@ class ListFieldExample(models.Model):
 [1, 2, 3, 4, 5]
 ```
 
-###### MapField
+##### MapField
 
 ```python
 class MapFieldExample(models.Model):
@@ -223,7 +223,7 @@ class MapFieldExample(models.Model):
 {'b': 2, 'c': {'a': 1}, 'a': 1}
 ```
 
-###### GeoPointField
+##### GeoPointField
 
 
 To save GeoPoint data you must use class `GeoPointValue`
@@ -248,7 +248,7 @@ class GeoPointFieldExample(models.Model):
 52.2297
 ```
 
-###### ReferenceField
+##### ReferenceField
 
 
 One of field offered by FireStore is Reference. In one document you can store
@@ -281,10 +281,10 @@ class Class(models.Model):
 
 ```
 
-##### Query
+#### Query
 
 
-###### objects.get
+##### objects.get
 
 ```python
     class User(models.Model):
@@ -301,7 +301,7 @@ class Class(models.Model):
 ```
 
 
-###### objects.all
+##### objects.all
 
 
 Return all documents in collection
@@ -334,7 +334,7 @@ class Class(models.Model):
 <User: fe500b4bc341471fa3118854b705c674>]
 ```
 
-###### objects.filter
+##### objects.filter
 
 Filter is based on django filter method. FireStore allow following comparison, 
 with are mapped to:
@@ -432,7 +432,7 @@ class Class(models.Model):
 [(20, 'Michael'), (20, 'Michael')]
 ```
 
-##### Delete
+#### Delete
 
 
 We can delete document by instance or by filter.
@@ -452,7 +452,7 @@ or
 ```
 
 
-##### Managers
+#### Managers
 
 
 Like in Django we can create own `Managers`. For example:
