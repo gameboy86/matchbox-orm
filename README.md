@@ -470,12 +470,12 @@ class User(models.Model):
 
 class AManager(Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(active__eq=True)
+        return super().get_queryset().filter(active=True)
 
 
 class DManager(Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(active__eq=False)
+        return super().get_queryset().filter(active=False)
 
 
 class Class(models.Model):
