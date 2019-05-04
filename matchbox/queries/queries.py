@@ -32,6 +32,9 @@ class QueryBase:
     def __init__(self, model):
         self.model = model
 
+    def get_ref(self):
+        return db.conn.collection(self.model._meta.collection_name)
+
 
 class FilterQuery(QueryBase):
     operations = {
@@ -62,7 +65,7 @@ class FilterQuery(QueryBase):
         return wheres
 
     def make_query(self):
-        bsq = db.conn.collection(self.model._meta.collection_name)
+        bsq = self.get_ref()
         for w in self.parse_where():
             bsq = bsq.where(*w)
         if self.n_limit:
@@ -130,9 +133,8 @@ class InsertQuery(QueryBase):
         self.insert_query = kwargs
 
     def get_ref(self, id=None):
-        return db.conn.collection(
-            self.model._meta.collection_name
-        ).document(id)
+
+        return super().get_ref().document(id)
 
     def parse_insert(self):
         out = {}
