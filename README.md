@@ -4,9 +4,8 @@
 
 <br/>
 
-|            |                                                |
-| -------    | ------                                         |
 | Details    | Matchbox is orm package for Google Firestore.  |
+| -------    | ------                                         |
 | Repository | https://github.com/gameboy86/matchbox          |
 | Author     | Maciej Gębarski (https://github.com/gameboy86) |
 | Contact    | mgebarski@gmail.com                            |
@@ -452,9 +451,9 @@ or
 >> User.objects.filter().delete()
 ```
 
---------
-Managers
---------
+
+##### Managers
+
 
 Like in Django we can create own `Managers`. For example:
 
