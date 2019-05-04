@@ -9,12 +9,18 @@ class BaseModel(type):
     def __new__(mcs, name, base, attrs):
         cls = super().__new__(mcs, name, base, attrs)
 
+        if 'Meta' not in attrs:
+            cls.Meta = None
+
         class Meta:
             fields = {}
             managers_map = {}
 
             def __init__(self, model_class):
                 self.model_class = model_class
+                self.collection_name = utils.convert_name(
+                    cls.__name__.lower()
+                )
 
             def get_field(self, f_name):
                 if f_name in self.fields:
@@ -33,14 +39,20 @@ class BaseModel(type):
                         return field
                 raise AttributeError('Field name %s not found' % f_name)
 
+            def set_from_model_meta(self, model_meta):
+                for m_name, m_val in model_meta.__dict__.items():
+                    if m_name == 'collection_name':
+                        self.collection_name = m_val
+
         _meta = Meta(cls)
         setattr(cls, '_meta', _meta)
 
-        _meta.db_table = utils.convert_name(cls.__name__.lower())
-
         has_primary_key = False
-
         for name, attr in cls.__dict__.items():
+            if (
+                isinstance(attr, type) and name == 'Meta'
+            ):
+                _meta.set_from_model_meta(attr)
             if (
                 isinstance(attr, (managers.BaseManager, fields.Field))
             ):
@@ -72,7 +84,7 @@ class Model(metaclass=BaseModel):
 
     @classmethod
     def collection_name(cls):
-        return cls._meta.db_table
+        return cls._meta.collection_name
 
     def get_fields(self):
         return {

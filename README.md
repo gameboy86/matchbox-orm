@@ -78,6 +78,27 @@ Another way to create model is use manager `create` method:
 <Test: 33eba5fd53244e38aa1b4951f104ec3c>
 ```
 
+By default collection name in DB will be create based on model name. If you 
+want to change it, you can do it using Meta. For example:
+
+```python
+from matchbox.models import *
+class Test(models.Model):
+    age = IntegerField()
+    name = TextField()
+    
+    class Meta:
+        collection_name = 'TestCollection'
+    
+    def __unicode__(self):
+        return self.id
+```
+
+```python
+>> Test._meta.collection_name
+'TestCollection'
+```
+
 #### Update
 
 

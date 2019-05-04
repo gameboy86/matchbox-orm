@@ -62,7 +62,7 @@ class FilterQuery(QueryBase):
         return wheres
 
     def make_query(self):
-        bsq = db.conn.collection(self.model._meta.db_table)
+        bsq = db.conn.collection(self.model._meta.collection_name)
         for w in self.parse_where():
             bsq = bsq.where(*w)
         if self.n_limit:
@@ -131,7 +131,7 @@ class InsertQuery(QueryBase):
 
     def get_ref(self, id=None):
         return db.conn.collection(
-            self.model._meta.db_table
+            self.model._meta.collection_name
         ).document(id)
 
     def parse_insert(self):
