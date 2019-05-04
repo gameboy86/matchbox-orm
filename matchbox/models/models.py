@@ -24,6 +24,15 @@ class BaseModel(type):
             def add_manager(self, manager):
                 self.managers_map[manager.name] = manager
 
+            def add_field(self, field):
+                self.fields[field.name] = field
+
+            def get_field_by_column_name(self, f_name):
+                for field in self.fields.values():
+                    if f_name in [field.name, field.db_column_name]:
+                        return field
+                raise AttributeError('Field name %s not found' % f_name)
+
         _meta = Meta(cls)
         setattr(cls, '_meta', _meta)
 
@@ -32,16 +41,12 @@ class BaseModel(type):
         has_primary_key = False
 
         for name, attr in cls.__dict__.items():
-            if isinstance(attr, managers.BaseManager):
+            if (
+                isinstance(attr, (managers.BaseManager, fields.Field))
+            ):
                 attr.contribute_to_class(cls, name)
-
-            if not isinstance(attr, fields.Field):
-                continue
-
-            attr.add_to_class(cls, name)
-            _meta.fields[attr.name] = attr
-            if isinstance(attr, fields.IDField):
-                has_primary_key = True
+                if isinstance(attr, fields.IDField):
+                    has_primary_key = True
 
         if 'objects' not in cls.__dict__:
             manager = managers.Manager()
@@ -49,8 +54,7 @@ class BaseModel(type):
 
         if not has_primary_key:
             pk = fields.IDField()
-            pk.add_to_class(cls, 'id')
-            _meta.fields['id'] = pk
+            pk.contribute_to_class(cls, 'id')
 
         if hasattr(cls, '__unicode__'):
             setattr(cls, '__repr__', lambda self: '<%s: %s>' % (
@@ -83,11 +87,10 @@ class Model(metaclass=BaseModel):
             self._save()
 
     def delete(self):
-        queries.DeleteQuery(
-            queries.FilterQuery(
-                self.__class__,
-            ).get(id=self.id)
-        ).execute()
+        queries.FilterQuery(
+            self.__class__,
+            id=self.id
+        ).delete()
         self.id = None
 
     def _update(self, update_fields):
