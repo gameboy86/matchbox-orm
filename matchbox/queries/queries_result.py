@@ -7,13 +7,12 @@ class QueryResultWrapper(object):
     def model_from_dict(cls, model_class, row_dict):
         instance = model_class()
         for attr, value in row_dict.to_dict().items():
-            if attr in instance._meta.fields:
-                field = instance._meta.fields[attr]
-                if isinstance(field, fields.ReferenceField):
-                    val = ReferenceFieldWrapper.model_from_dict(field, value)
-                else:
-                    val = field.python_value(value)
-                setattr(instance, attr, val)
+            field = instance._meta.get_field_by_column_name(attr)
+            if isinstance(field, fields.ReferenceField):
+                val = ReferenceFieldWrapper.model_from_dict(field, value)
+            else:
+                val = field.python_value(value)
+            setattr(instance, field.name, val)
         instance.id = row_dict.id
         return instance
 

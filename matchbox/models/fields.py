@@ -12,20 +12,34 @@ class Field:
     allowed_attributes = []
 
     def __init__(self, *args, **kwargs):
+        self.raw_attributes = kwargs
         self.field_validator = field_validator.FieldValidator(
-            self, kwargs or {}
+            self, {
+                k: v for
+                k, v in kwargs.items()
+                if k in field_validator.FieldValidator.ATTRIBUTES
+            }
         )
         self.name = None
+        self.model = None
 
-    def add_to_class(self, klass, name):
+    def contribute_to_class(self, model, name):
         self.name = name
-        setattr(klass, name, None)
+        setattr(model, name, None)
+        model._meta.add_field(self)
 
     def lookup_value(self, lookup_type, value):
         val = self.field_validator.validate(self.name, value)
         if val is None:
             return val
         return self.db_value(val)
+
+    @property
+    def db_column_name(self):
+        return (
+            self.raw_attributes.get('column_name')
+            or self.name
+        )
 
     def db_value(self, value):
         raise NotImplementedError()

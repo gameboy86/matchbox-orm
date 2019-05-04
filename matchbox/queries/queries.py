@@ -138,7 +138,7 @@ class InsertQuery(QueryBase):
         out = {}
         for k, f in self.model._meta.fields.items():
             val = self.insert_query.get(k)
-            out[k] = f.lookup_value(None, val)
+            out[f.db_column_name] = f.lookup_value(None, val)
         return out
 
     def raw_execute(self):
@@ -158,7 +158,7 @@ class UpdateQuery(InsertQuery):
         out = {}
         for k, v in self.insert_query.items():
             field = self.model._meta.get_field(k)
-            out[k] = field.lookup_value(None, v)
+            out[field.db_column_name] = field.lookup_value(None, v)
         return out
 
     def raw_execute(self):
