@@ -41,10 +41,10 @@ database.db_initialization('path/to/serviceAccount.json')
 #### Create
 
 ```python
-from matchbox.models import *
+from matchbox import models
 class Test(models.Model):
-    age = IntegerField()
-    name = TextField()
+    age = models.IntegerField()
+    name = models.TextField()
 
     def __unicode__(self):
         return self.id
@@ -126,8 +126,8 @@ If we want update only specific fields, we can use `update_fields` parameter in
 
 ```python
 class Test2(models.Model):
-    age = IntegerField(default=25)
-    name = TextField(blank=True)
+    age = models.IntegerField(default=25)
+    name = models.TextField(blank=True)
 ```
 
 ```python
@@ -168,7 +168,7 @@ If you change id and save, new document will be create in Firestore.
 
 ```python
 class TimeStampFieldExample(models.Model):
-    datetimestamp = TimeStampField()
+    datetimestamp = models.TimeStampField()
     
     def __unicode__(self):
         return self.id
@@ -188,7 +188,7 @@ datetime.datetime(2019, 5, 4, 16, 42, 34, 583953, tzinfo=datetime.timezone(datet
 
 ```python
 class ListFieldExample(models.Model):
-    list_f = ListField()
+    list_f = models.ListField()
 
     def __unicode__(self):
         return self.id
@@ -207,7 +207,7 @@ class ListFieldExample(models.Model):
 
 ```python
 class MapFieldExample(models.Model):
-    map_f = MapField()
+    map_f = models.MapField()
 
     def __unicode__(self):
         return self.id
@@ -231,7 +231,7 @@ To save GeoPoint data you must use class `GeoPointValue`
 
 ```python
 class GeoPointFieldExample(models.Model):
-    geo_point_f = GeoPointField()
+    geo_point_f = models.GeoPointField()
     
     def __unicode__(self):
         return self.id
@@ -258,14 +258,14 @@ reference to another document.
 ```python
 
 class User(models.Model):
-    name = TextField()
+    name = models.TextField()
     
     def __unicode__(self):
         return self.id
 
 class Class(models.Model):
-    name = TextField()
-    user = ReferenceField(User)
+    name = models.TextField()
+    user = models.ReferenceField(User)
     
     def __unicode__(self):
         return self.id
@@ -289,7 +289,7 @@ class Class(models.Model):
 
 ```python
     class User(models.Model):
-    name = TextField()
+    name = models.TextField()
     
     def __unicode__(self):
         return self.id
@@ -309,14 +309,14 @@ Return all documents in collection
 
 ```python
 class User(models.Model):
-    name = TextField()
+    name = models.TextField()
     
     def __unicode__(self):
         return self.id
 
 class Class(models.Model):
-    name = TextField()
-    user = ReferenceField(User)
+    name = models.TextField()
+    user = models.ReferenceField(User)
     
     def __unicode__(self):
         return self.id
@@ -352,9 +352,9 @@ with are mapped to:
 
 ```python
 class User(models.Model):
-    name = TextField()
-    evaluations = ListField()
-    age = IntegerField(default=20)
+    name = models.TextField()
+    evaluations = models.ListField()
+    age = models.IntegerField(default=20)
     
     def __unicode__(self):
        return self.id
@@ -400,8 +400,8 @@ You can also filter by ReferenceField
 
 ```python
 class Class(models.Model):
-    name = TextField()
-    user = ReferenceField(User)
+    name = models.TextField()
+    user = models.ReferenceField(User)
     
     def __unicode__(self):
         return self.id
@@ -461,27 +461,27 @@ Like in Django we can create own `Managers`. For example:
 ```python
 
 class User(models.Model):
-    name = TextField()
-    evaluations = ListField()
-    age = IntegerField(default=20)
+    name = models.TextField()
+    evaluations = models.ListField()
+    age = models.IntegerField(default=20)
 
     def __unicode__(self):
         return self.id
 
-class AManager(Manager):
+class AManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(active=True)
 
 
-class DManager(Manager):
+class DManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(active=False)
 
 
 class Class(models.Model):
-    name = TextField()
-    user = ReferenceField(User)
-    active = BooleanField()
+    name = models.TextField()
+    user = models.ReferenceField(User)
+    active = models.BooleanField()
     
     a_objects = AManager()
     f_objects = DManager()
