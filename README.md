@@ -33,6 +33,7 @@ More info, how to generate JSON file with private key you will find on [Get star
 
 ```python
 from matchbox import database
+
 database.db_initialization('path/to/serviceAccount.json')
 ```
 
@@ -42,6 +43,7 @@ database.db_initialization('path/to/serviceAccount.json')
 
 ```python
 from matchbox import models
+
 class Test(models.Model):
     age = models.IntegerField()
     name = models.TextField()
@@ -82,10 +84,11 @@ By default collection name in DB will be create based on model name. If you
 want to change it, you can do it using Meta. For example:
 
 ```python
-from matchbox.models import *
+from matchbox import models
+
 class Test(models.Model):
-    age = IntegerField()
-    name = TextField()
+    age = models.IntegerField()
+    name = models.TextField()
     
     class Meta:
         collection_name = 'TestCollection'
