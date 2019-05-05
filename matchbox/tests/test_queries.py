@@ -19,28 +19,7 @@ class TestFilterQuery(unittest.TestCase):
         self.assertEqual(len(pq), 1)
         self.assertEqual(pq[0][0], 'test')
         self.assertEqual(pq[0][1], '==')
-        self.assertEqual(pq[0][2], 10)class TestProxProviderApi(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def test_registry_provider(self):
-        class TestProvider(ProxProviderModelBase):
-            """TEST DOC"""
-            def proxies(self):
-                return ['192.168.1.1:8081']
-
-        name = convert_name(TestProvider.__name__)
-        self.assertTrue(name in ProxProviderApi.available_providers())
-        pro = next(
-            (
-                d for d in ProxProviderApi.imported_providers()
-                if d['name'] == name
-            ),
-            None
-        )
-
-        self.assertEqual(pro['doc'], 'TEST DOC')
-
+        self.assertEqual(pq[0][2], 10)
 
         pq = FilterQuery(
             TestModel, test=10, id='AEX12'
