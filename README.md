@@ -18,10 +18,8 @@ It is in development.
 
 ### Installing
 
-Until `Matchbox` will be in development, it can only by installed using github 
-
 ```bash
- pip install git+https://github.com/gameboy86/matchbox
+ pip install matchbox-orm
  ```
 
 ## Usage
