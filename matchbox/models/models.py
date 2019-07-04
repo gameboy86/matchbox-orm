@@ -21,6 +21,12 @@ class BaseModel(type):
                 self.collection_name = utils.convert_name(
                     cls.__name__.lower()
                 )
+                self.abstract = False
+
+            def get_id_field_name(self):
+                for _name, field in self.fields.items():
+                    if isinstance(field, fields.IDField):
+                        return _name
 
             def get_field(self, f_name):
                 if f_name in self.fields:
@@ -43,11 +49,21 @@ class BaseModel(type):
                 for m_name, m_val in model_meta.__dict__.items():
                     if m_name == 'collection_name':
                         self.collection_name = m_val
+                    if m_name == 'abstract':
+                        self.abstract = m_val
 
         _meta = Meta(cls)
         setattr(cls, '_meta', _meta)
 
-        has_primary_key = False
+        for bc in base:
+            if not bc._meta.abstract:
+                continue
+
+            for name, attr in bc._meta.fields.items():
+                if isinstance(attr, fields.IDField):
+                    continue
+                attr.contribute_to_class(cls, name)
+
         for name, attr in cls.__dict__.items():
             if (
                 isinstance(attr, type) and name == 'Meta'
@@ -56,21 +72,26 @@ class BaseModel(type):
             if (
                 isinstance(attr, (managers.BaseManager, fields.Field))
             ):
-                attr.contribute_to_class(cls, name)
                 if isinstance(attr, fields.IDField):
-                    has_primary_key = True
+                    raise AttributeError(
+                        "Manually added IDField is forbidden."
+                        "It will be created automatic"
+                    )
+                attr.contribute_to_class(cls, name)
 
         if 'objects' not in cls.__dict__:
             manager = managers.Manager()
             manager.contribute_to_class(cls, 'objects')
 
-        if not has_primary_key:
-            pk = fields.IDField()
-            pk.contribute_to_class(cls, 'id')
-
         if hasattr(cls, '__unicode__'):
             setattr(cls, '__repr__', lambda self: '<%s: %s>' % (
                 self.__class__.__name__, self.__unicode__()))
+
+        if _meta.abstract:
+            return cls
+
+        pk = fields.IDField()
+        pk.contribute_to_class(cls, 'id')
 
         return cls
 
@@ -78,6 +99,10 @@ class BaseModel(type):
 class Model(metaclass=BaseModel):
 
     def __init__(self, *args, **kwargs):
+        if self._meta.abstract:
+            raise AttributeError(
+                "Can't create instance of abstract Model"
+            )
         self.id = None
         for k, v in kwargs.items():
             setattr(self, k, v)
