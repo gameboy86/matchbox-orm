@@ -9,7 +9,8 @@
 | Repository | https://github.com/gameboy86/matchbox          |
 | Author     | Maciej Gębarski (https://github.com/gameboy86) |
 | Contact    | mgebarski@gmail.com                            |
-| License    | MIT License
+| License    | MIT License                                    |
+| Version    | 0.2                                            |
 ## Details
 
 `Matchbox` is a Python Object-Relational Mapper for Google Firestore.
@@ -162,8 +163,8 @@ class Test2(models.Model):
 
 #### IDField
 
-
-In our example Test model we don't specify id field. It have been added automatically:
+`IDField` is create automatically by orm. We `can't` add own, because Firestore doesn't 
+allow for self named id field.
 
 ```python
 >> t._meta.fields
@@ -528,4 +529,47 @@ class Class(models.Model):
 
 >> list(Class.a_objects.all())
 [<Class: 96Ww50qJVh53v46iyOPP>, <Class: cjGlGWM8RiJqcAQLGvXK>]
+```
+
+#### Abstract model
+
+Abstract model useful when you want to put some common information into a number of other models.
+You must create base class and add abstract = True in the Meta model class.
+
+For example:
+
+```python
+from matchbox import models as fsm, database
+from datetime import datetime
+database.db_initialization('xxx.json')
+
+
+class SuffixFsm(fsm.Model):
+    createdAt = fsm.TimeStampField()
+    createdBy = fsm.TextField(max_length=30, default='')
+
+    class Meta:
+        abstract = True
+
+
+class SystemMaster(SuffixFsm):
+    systemName = fsm.TextField(max_length=50, default='')
+
+```
+
+```python
+>> master = SystemMaster(
+        systemName='name',
+        createdAt=datetime.now(),
+        createdBy='test',
+    )
+>> master.save()
+>> master.__dict__
+
+{'id': '9ZCOPU8KRwUB4rRVF1kZ',
+ 'systemName': 'name',
+ 'createdAt': datetime.datetime(2019, 7, 4, 21, 36, 56, 472744),
+ 'createdBy': 'test'}
+
+
 ```

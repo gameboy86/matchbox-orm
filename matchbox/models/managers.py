@@ -10,6 +10,10 @@ class ManagerDescriptor:
             raise AttributeError(
                 "Manager isn't accessible via %s instances" % cls.__name__
             )
+        if cls._meta.abstract:
+            raise AttributeError(
+                "Manager isn't accessible via %s abstract model" % cls.__name__
+            )
         return cls._meta.managers_map[self.manager.name]
 
 
