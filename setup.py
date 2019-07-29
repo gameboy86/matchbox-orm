@@ -10,6 +10,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/gameboy86/matchbox',
+    keywords='firebase orm firestore',
     author='Maciej Gębarski',
     author_email='mgebarski@gmail.com',
     license='MIT',
