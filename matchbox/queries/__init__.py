@@ -1,9 +1,13 @@
-from .queries import *
+from .queries import (
+    DeleteQuery,
+    FilterQuery,
+    InsertQuery,
+    UpdateQuery,
+)
 
 __all__ = [
-    # 'GetQuery',
-    'DeleteQuery',
-    'FilterQuery',
-    'InsertQuery',
-    'UpdateQuery',
+    DeleteQuery,
+    FilterQuery,
+    InsertQuery,
+    UpdateQuery,
 ]

@@ -1,7 +1,5 @@
 import datetime
-import google
 
-from matchbox.database import db
 from matchbox.models import utils as models_utils
 from matchbox.models import field_validator
 from matchbox.models import error
@@ -36,10 +34,7 @@ class Field:
 
     @property
     def db_column_name(self):
-        return (
-            self.raw_attributes.get('column_name')
-            or self.name
-        )
+        return self.raw_attributes.get('column_name') or self.name
 
     def db_value(self, value):
         raise NotImplementedError()
@@ -209,9 +204,6 @@ class ReferenceField(Field):
                     type(value)
                 )
             )
-        return google.cloud.firestore_v1.document.DocumentReference(
-                    self.name, value.id, client=db.conn
-                )
 
     def python_value(self, value):
         return value

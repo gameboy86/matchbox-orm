@@ -1,7 +1,11 @@
 import re
 import uuid
 import iso8601
+import google
+
 from firebase_admin import firestore
+
+from matchbox import database
 
 
 class GeoPointValue:
@@ -23,3 +27,14 @@ def generate_id():
 
 def google_datetime_to_datetime(gfd):
     return iso8601.parse_date(gfd.isoformat())
+
+
+def get_reference_fields(collection, value, db=None):
+    if db is None:
+        db = database.db
+
+    return google.cloud.firestore_v1.document.DocumentReference(
+        collection,
+        value,
+        client=db.conn
+    )

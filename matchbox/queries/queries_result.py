@@ -22,6 +22,7 @@ class ReferenceFieldWrapper(object):
     def model_from_dict(cls, field, value):
         if not value:
             return None
+
         db_val = value.get()
         if not db_val.exists:
             raise error.ReferenceCollectionObjectDoesNotExist(
