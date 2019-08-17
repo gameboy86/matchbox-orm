@@ -3,6 +3,7 @@ from firebase_admin import firestore
 from matchbox.database import db
 from matchbox.queries import error
 from matchbox.queries import queries_result
+from matchbox.models import fields, utils
 
 
 class QuerySet:
@@ -56,12 +57,22 @@ class FilterQuery(QueryBase):
     def parse_where(self):
         wheres = []
         for fo, vl in self.select_query.items():
+
             s_fs = fo.split(self.query_separator)
             if len(s_fs) == 1 or s_fs[-1] not in self.operations:
                 fs, o = s_fs, 'eq'
             else:
                 fs, o = s_fs[:-1], s_fs[-1]
-            wheres.append(('.'.join(fs), self.operations[o], vl))
+
+            field = self.model.get_field(fs.pop(0))
+
+            if isinstance(field, fields.ReferenceField):
+                vl = utils.get_reference_fields(
+                    field.ref_model.collection_name(),
+                    vl.id if hasattr(vl, 'id') else vl,
+                )
+
+            wheres.append(('.'.join([field.db_column_name] + fs), self.operations[o], vl))
         return wheres
 
     def make_query(self):

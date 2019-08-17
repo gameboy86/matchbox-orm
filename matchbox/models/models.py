@@ -19,7 +19,7 @@ class BaseModel(type):
             def __init__(self, model_class):
                 self.model_class = model_class
                 self.collection_name = utils.convert_name(
-                    cls.__name__.lower()
+                    cls.__name__
                 )
                 self.abstract = False
 
@@ -57,6 +57,10 @@ class BaseModel(type):
 
         for bc in base:
             if not bc._meta.abstract:
+                if bc != Model:
+                    raise AttributeError(
+                        "Can't inherit from non abstract class"
+                    )
                 continue
 
             for name, attr in bc._meta.fields.items():
@@ -110,6 +114,10 @@ class Model(metaclass=BaseModel):
     @classmethod
     def collection_name(cls):
         return cls._meta.collection_name
+
+    @classmethod
+    def get_field(cls, name):
+        return cls._meta.get_field(name)
 
     def get_fields(self):
         return {

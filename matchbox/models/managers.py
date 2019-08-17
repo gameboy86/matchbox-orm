@@ -49,4 +49,3 @@ class BaseManager:
 
 class Manager(BaseManager):
     pass
-
