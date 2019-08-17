@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='matchbox-orm',
-    version='0.2',
+    version='0.2.1',
     description='matchbox is orm package for google Cloud Firestore',
     long_description=long_description,
     long_description_content_type='text/markdown',
