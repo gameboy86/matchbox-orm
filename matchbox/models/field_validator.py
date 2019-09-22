@@ -25,11 +25,14 @@ class FieldValidator:
                     )
                 )
 
-        if self.default and value is None:
+        if self.default is not None and value is None:
             value = self.default
 
         if not self.attributes.get('blank') and value is None:
             raise AttributeError('Field {} required value'.format(f_name))
+
+        if value is None:
+            return None
 
         if self.attributes.get('max_length'):
             value = value[:self.attributes.get('max_length')]
