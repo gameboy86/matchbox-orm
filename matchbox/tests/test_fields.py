@@ -1,6 +1,11 @@
 import datetime
-import unittest
+from unittest import mock
 
+import google
+import unittest
+from unittest.mock import Mock, MagicMock
+
+import matchbox
 from matchbox.models import fields
 from matchbox.models import error
 
@@ -284,3 +289,61 @@ class TestMapField(unittest.TestCase):
 
         v = m_field.lookup_value(None, {'a': 1})
         self.assertEqual(v, {'a': 1})
+
+
+class MockRefModel1:
+    id = None
+
+    @staticmethod
+    def collection_name():
+        return None
+
+
+class MockRefModel2:
+    pass
+
+
+class MockRefModel11(MockRefModel1):
+    pass
+
+
+class TestReferenceField(unittest.TestCase):
+    def test_lookup_value_none_returns_none(self):
+        r_field = fields.ReferenceField(Mock())
+
+        actual = r_field.lookup_value(None, None)
+        self.assertEqual(None, actual)
+
+    def test_lookup_value_not_none_returns_db_value(self):
+        r_field = fields.ReferenceField(Mock())
+
+        expected = 'db_value'
+        r_field.db_value = MagicMock(return_value=expected)
+
+        actual = r_field.lookup_value(None, 'value')
+        self.assertEqual(expected, actual)
+
+    def test_db_value_ref_model_is_not_subclass(self):
+        mock_model = MockRefModel1()
+        mock_ref_model = MockRefModel2()
+        r_field = fields.ReferenceField(mock_ref_model.__class__)
+
+        with self.assertRaises(error.DBTypeError) as context:
+            r_field.db_value(mock_model)
+
+        self.assertEqual(
+            "ReferenceField required value type MockRefModel2, get MockRefModel1",
+            str(context.exception)
+        )
+
+    def test_db_value_ref_model_is_subclass(self):
+        mock_model = MockRefModel11()
+        mock_ref_model = MockRefModel1()
+        r_field = fields.ReferenceField(mock_ref_model.__class__)
+
+        expected = 'real_value'
+        with mock.patch('matchbox.database.Database.conn'):
+            google.cloud.firestore_v1.document.DocumentReference = MagicMock(return_value=expected)
+            actual = r_field.db_value(mock_model)
+
+        self.assertEqual(expected, actual)

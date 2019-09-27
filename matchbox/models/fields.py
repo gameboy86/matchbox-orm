@@ -1,5 +1,7 @@
 import datetime
+import google
 
+from matchbox.database import db
 from matchbox.models import utils as models_utils
 from matchbox.models import field_validator
 from matchbox.models import error
@@ -200,10 +202,13 @@ class ReferenceField(Field):
             raise error.DBTypeError(
                 '{} required value type {}, get {}'.format(
                     self.__class__.__name__,
-                    self.ref_model.__class__.__name__,
-                    type(value)
+                    self.ref_model.__name__,
+                    value.__class__.__name__
                 )
             )
+        return google.cloud.firestore_v1.document.DocumentReference(
+            value.collection_name(), value.id, client=db.conn
+        )
 
     def python_value(self, value):
         return value
