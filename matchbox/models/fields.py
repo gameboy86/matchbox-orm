@@ -202,8 +202,8 @@ class ReferenceField(Field):
             raise error.DBTypeError(
                 '{} required value type {}, get {}'.format(
                     self.__class__.__name__,
-                    self.ref_model.__class__.__name__,
-                    type(value)
+                    self.ref_model.__name__,
+                    value.__class__.__name__
                 )
             )
         return google.cloud.firestore_v1.document.DocumentReference(
