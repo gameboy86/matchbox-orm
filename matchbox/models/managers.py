@@ -40,11 +40,14 @@ class BaseManager:
     def create(self, **kwargs):
         return self.get_queryset().create(**kwargs)
 
+    def update(self, **kwargs):
+        return self.get_queryset().update(**kwargs)
+
     def get(self, **kwargs):
         return self.get_queryset().get(**kwargs)
 
-    def delete(self):
-        self.get_queryset().delete()
+    def delete(self, **kwargs):
+        self.get_queryset().delete(**kwargs)
 
 
 class Manager(BaseManager):

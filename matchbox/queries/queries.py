@@ -21,12 +21,13 @@ class QuerySet:
         return FilterQuery(self.model, **kwargs).get()
 
     def create(self, **kwargs):
-        model = self.model(**kwargs)
-        model.save()
-        return model
+        return InsertQuery(self.model, **kwargs).execute()
 
-    def delete(self):
-        FilterQuery(self.model).delete()
+    def update(self, **kwargs):
+        UpdateQuery(self.model, **kwargs).execute()
+
+    def delete(self, **kwargs):
+        FilterQuery(self.model, **kwargs).delete()
 
 
 class QueryBase:
@@ -34,7 +35,7 @@ class QueryBase:
         self.model = model
 
     def get_ref(self):
-        return db.conn.collection(self.model._meta.collection_name)
+        return db.conn.collection("/".join(self.model.path))
 
 
 class FilterQuery(QueryBase):
@@ -72,7 +73,10 @@ class FilterQuery(QueryBase):
                     vl.id if hasattr(vl, 'id') else vl,
                 )
 
-            wheres.append(('.'.join([field.db_column_name] + fs), self.operations[o], vl))
+            wheres.append(
+                ('.'.join([field.db_column_name] + fs),
+                 self.operations[o], vl)
+            )
         return wheres
 
     def make_query(self):
@@ -144,7 +148,6 @@ class InsertQuery(QueryBase):
         self.insert_query = kwargs
 
     def get_ref(self, id=None):
-
         return super().get_ref().document(id)
 
     def parse_insert(self):
@@ -159,10 +162,12 @@ class InsertQuery(QueryBase):
         ref = self.get_ref(kwargs.get('id'))
         kwargs['id'] = ref.id
         ref.set(kwargs)
-        return self.model(**kwargs)
+        return ref.get()
 
     def execute(self):
-        return self.raw_execute()
+        return queries_result.QueryResultWrapper.model_from_dict(
+            self.model, self.raw_execute()
+        )
 
 
 class UpdateQuery(InsertQuery):
@@ -178,6 +183,9 @@ class UpdateQuery(InsertQuery):
         kwargs = self.parse_insert()
         ref = self.get_ref(kwargs['id'])
         ref.update(kwargs)
+
+    def execute(self):
+        return self.raw_execute()
 
 
 class DeleteQuery:

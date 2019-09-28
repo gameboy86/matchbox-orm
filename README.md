@@ -10,7 +10,7 @@
 | Author     | Maciej Gębarski (https://github.com/gameboy86) |
 | Contact    | mgebarski@gmail.com                            |
 | License    | MIT License                                    |
-| Version    | 0.2.3                                            |
+| Version    | 0.2.4                                          |
 ## Details
 
 `Matchbox` is a Python Object-Relational Mapper for Google Firestore.
@@ -540,7 +540,7 @@ For example:
 
 ```python
 from matchbox import models as fsm, database
-from datetime import datetime
+
 database.db_initialization('xxx.json')
 
 
@@ -573,3 +573,128 @@ class SystemMaster(SuffixFsm):
 
 
 ```
+
+
+### SubCollections
+
+Let say we want store structure like below in firestore
+
+```
+    (C) rooms 
+        (D) roomA 
+        name : "my chat room"
+            (C) messages 
+                (D) message1
+                from : "alex"
+                msg : "Hello World!"
+
+            (C) message2
+                ...
+
+        (D) roomB
+            ...
+
+(C) -> Collection
+(D) -> Document
+```
+
+
+
+```python
+from matchbox import models, database
+database.db_initialization('xxx.json')
+
+class Message(models.Model):
+    by = models.TextField()
+    msg = models.TextField()
+
+    class Meta:
+        collection_name = 'messages'
+
+
+class Room(models.Model):
+    name = models.TextField()
+
+    class Meta:
+        collection_name = 'rooms'
+
+```
+
+To create subcollection in document, we must set path in model to document using set_base_path.
+
+ModelClass.set_base_path(model_instance) -> model_instance must be stored in firestore before passed to method.
+
+```python
+>> r = Room.objects.create(name='roomA')
+>> Message.set_base_path(r)
+>> # Wrong Room(name='roomA'); Message.set_base_path(r) 
+>> Message.objects.create(by='Alex', msg='Hello')
+>> Message.objects.create(by='Alex', msg='How are you ?') 
+
+>> r = Room.objects.create(name='roomB')
+>> Message.set_base_path(r)
+>> Message.objects.create(by='Neo', msg='Matrix ?')
+>> Message.objects.create(by='Matrix', msg='Follow the white rabbit')
+
+```
+
+`IMPORTANT`: Default path is '/<collection_name>', so if you don't set path
+your document will be created in root path. You always can restore default path
+using ModelClass.reset_base_path().
+
+To check path instance use model_path
+```python
+>> r = Room.objects.get(name='roomA')  # r.id == 'K8imB6eui5ibfSEZon3e'
+>> print(r.model_path)
+('rooms', 'K8imB6eui5ibfSEZon3e')
+
+>> r = Room.objects.get(name='roomB')  # r.id == '4QIk9Q5LCrkVz1bWir6w
+>> print(r.model_path)
+('rooms', '4QIk9Q5LCrkVz1bWir6w')
+
+>> Message.set_base_path(r)
+>> m = Message.objects.get(by='Neo')  # m.id == 'YypGDFPi5M1NYeWqROSq'
+>> print(m.model_path)
+('rooms', '4QIk9Q5LCrkVz1bWir6w', 'messages', 'YypGDFPi5M1NYeWqROSq')
+
+```
+
+To check model path use 'path' property
+```python
+>> print(Room.path)  # ('rooms', ) 
+```
+
+
+To get all messages from 'roomB' filtered by 'by' field:
+```python
+>> r = Room.objects.get(name='roomB')
+>> Message.set_base_path(r)
+>> neo_messages = Message.objects.filter(by='Neo')
+>> print(len(list(neo_messages)))
+1
+
+>> matrix_messages = Message.objects.filter(by='Matrix')
+>> print(len(list(matrix_messages)))
+1
+```
+ 
+Now let say, we want to delete all messages in 'roomA':
+
+```python
+>> r = Room.objects.get(name='roomA')
+>> Message.set_base_path(r)
+>> print(len(list(Message.objects.all())))
+2
+
+>> Message.objects.delete()
+>> print(len(list(Message.objects.all())))
+0
+
+>> r = Room.objects.get(name='roomB')
+>> Message.set_base_path(r)
+>> print([x.msg for x in Message.objects.all()])
+['Follow the white rabbit', 'Matrix ?']
+```
+
+`IMPORTANT`: We can't delete room (Room.objects.get(name='roomA').delete()). If we
+do this in this way, references in firestore to messages will still exist. So before deleting Collection, make sure you delete all subcollections independently from his documents. 

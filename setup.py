@@ -5,12 +5,12 @@ with open("README.md", "r") as fh:
 
 setup(
     name='matchbox-orm',
-    version='0.2.3',
+    version='0.2.4',
     description='matchbox is orm package for google Cloud Firestore',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/gameboy86/matchbox',
-    keywords='firebase orm firestore',
+    keywords='firebase orm firestore google cloud',
     author='Maciej Gębarski',
     author_email='mgebarski@gmail.com',
     license='MIT',
