@@ -1,11 +1,10 @@
 import datetime
 from unittest import mock
 
-import google
 import unittest
 from unittest.mock import Mock, MagicMock
+from firebase_admin import firestore
 
-import matchbox
 from matchbox.models import fields
 from matchbox.models import error
 
@@ -291,23 +290,16 @@ class TestMapField(unittest.TestCase):
         self.assertEqual(v, {'a': 1})
 
 
-class MockRefModel1:
-    id = None
-
-    @staticmethod
-    def collection_name():
-        return None
-
-
-class MockRefModel2:
-    pass
-
-
-class MockRefModel11(MockRefModel1):
-    pass
-
-
 class TestReferenceField(unittest.TestCase):
+
+    def setUp(self):
+        self.Model = type('Model', (), {'id': 'AEX1212'})
+        self.RefModel = type(
+            'RefModel',
+            (self.Model, ),
+            {'id': 'AEX1213', 'collection_name': lambda x: None}
+        )
+
     def test_lookup_value_none_returns_none(self):
         r_field = fields.ReferenceField(Mock())
 
@@ -324,26 +316,24 @@ class TestReferenceField(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_db_value_ref_model_is_not_subclass(self):
-        mock_model = MockRefModel1()
-        mock_ref_model = MockRefModel2()
-        r_field = fields.ReferenceField(mock_ref_model.__class__)
+        r_field = fields.ReferenceField(self.RefModel)
 
         with self.assertRaises(error.DBTypeError) as context:
-            r_field.db_value(mock_model)
+            r_field.db_value(self.Model())
 
         self.assertEqual(
-            "ReferenceField required value type MockRefModel2, get MockRefModel1",
+            "ReferenceField required value type RefModel, get Model",
             str(context.exception)
         )
 
     def test_db_value_ref_model_is_subclass(self):
-        mock_model = MockRefModel11()
-        mock_ref_model = MockRefModel1()
-        r_field = fields.ReferenceField(mock_ref_model.__class__)
+        r_field = fields.ReferenceField(self.RefModel)
+        r_model_instance = self.RefModel()
 
         expected = 'real_value'
         with mock.patch('matchbox.database.Database.conn'):
-            google.cloud.firestore_v1.document.DocumentReference = MagicMock(return_value=expected)
-            actual = r_field.db_value(mock_model)
+            firestore.DocumentReference = MagicMock(return_value=expected)
+            actual = r_field.db_value(r_model_instance)
 
         self.assertEqual(expected, actual)
+

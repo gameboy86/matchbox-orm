@@ -1,5 +1,5 @@
 import datetime
-import google
+from firebase_admin import firestore
 
 from matchbox.database import db
 from matchbox.models import utils as models_utils
@@ -206,7 +206,7 @@ class ReferenceField(Field):
                     value.__class__.__name__
                 )
             )
-        return google.cloud.firestore_v1.document.DocumentReference(
+        return firestore.DocumentReference(
             value.collection_name(), value.id, client=db.conn
         )
 

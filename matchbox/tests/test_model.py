@@ -75,3 +75,92 @@ class TestModel(unittest.TestCase):
                 collection_name = 'ownName'
 
         self.assertEqual(TestModelClass.collection_name(), 'ownName')
+
+    def test_path(self):
+        class TestModelClassParent(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+        class TestModelClass(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+            class Meta:
+                collection_name = 'tmc'
+
+        tmcp = TestModelClassParent()
+        tmc = TestModelClass()
+
+        self.assertEqual(tmcp.path, ('test_model_class_parent',))
+        self.assertEqual(tmc.path, ('tmc', ))
+
+    def test_model_path(self):
+        class TestModelClassParent(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+        class TestModelClass(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+            class Meta:
+                collection_name = 'tmc'
+
+        tmcp = TestModelClassParent()
+        tmcp.id = 'AEX123123'
+
+        tmc = TestModelClass()
+
+        self.assertEqual(
+            tmcp.model_path,
+            ('test_model_class_parent', 'AEX123123')
+        )
+
+        self.assertEqual(
+            tmc.model_path,
+            ('tmc', None)
+        )
+
+    def test_set_base_path(self):
+        class TestModelClassParent(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+        class TestModelClass(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+            class Meta:
+                collection_name = 'tmc'
+
+        tmcp = TestModelClassParent()
+        tmcp.id = 'AEX123123'
+
+        TestModelClass.set_base_path(tmcp)
+        self.assertEqual(
+            TestModelClass.path,
+            ('test_model_class_parent', 'AEX123123', 'tmc')
+        )
+
+    def test_set_base_path_no_id(self):
+        class TestModelClassParent(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+        class TestModelClass(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+            class Meta:
+                collection_name = 'tmc'
+
+        tmcp = TestModelClassParent()
+
+        with self.assertRaises(AttributeError) as context:
+            TestModelClass.set_base_path(tmcp)
+
+        self.assertEqual(
+            "You can't set base path if parent instance has "
+            "not been saved (don't have id)",
+            str(context.exception)
+        )

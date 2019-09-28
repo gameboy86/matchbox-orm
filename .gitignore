@@ -1,0 +1,14 @@
+*.pyc
+
+.idea/
+.pytest_cache/
+
+matchbox_orm.egg-info/
+build/
+dist/
+
+.coverage
+coverage.xml
+
+
+

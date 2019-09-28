@@ -1,7 +1,5 @@
 from matchbox.models import utils
-
 from matchbox.models import fields
-from matchbox.queries import queries
 from matchbox.models import managers
 
 
@@ -97,6 +95,8 @@ class BaseModel(type):
         pk = fields.IDField()
         pk.contribute_to_class(cls, 'id')
 
+        setattr(cls, 'path', (cls._meta.collection_name, ))
+
         return cls
 
 
@@ -125,6 +125,26 @@ class Model(metaclass=BaseModel):
             for f in self._meta.fields.values()
         }
 
+    @classmethod
+    def set_base_path(cls, model_object):
+        if len([
+            x for x in model_object.model_path
+            if x is not None]
+        ) % 2 != 0:
+            raise AttributeError(
+                "You can't set base path if parent instance has "
+                "not been saved (don't have id)"
+            )
+        cls.path = model_object.model_path + (cls.collection_name(), )
+
+    @classmethod
+    def reset_base_path(cls):
+        cls.path = (cls.collection_name(), )
+
+    @property
+    def model_path(self):
+        return self.path + (self.id, )
+
     def save(self, update_fields=None):
         if update_fields is not None:
             self._update(update_fields)
@@ -132,25 +152,21 @@ class Model(metaclass=BaseModel):
             self._save()
 
     def delete(self):
-        queries.FilterQuery(
-            self.__class__,
+        self.__class__.objects.delete(
             id=self.id
-        ).delete()
+        )
         self.id = None
 
     def _update(self, update_fields):
-        queries.UpdateQuery(
-            self.__class__,
+        self.__class__.objects.update(
             **self._get_update_fields(
                 update_fields
-            )
-        ).execute()
+            ))
 
     def _save(self):
-        self.id = queries.InsertQuery(
-            self.__class__,
+        self.id = self.__class__.objects.create(
             **self.get_fields()
-        ).execute().id
+        ).id
 
     def _get_update_fields(self, update_fields):
         if type(update_fields) not in [list, tuple]:
