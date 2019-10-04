@@ -95,7 +95,7 @@ class BaseModel(type):
         pk = fields.IDField()
         pk.contribute_to_class(cls, 'id')
 
-        setattr(cls, 'path', (cls._meta.collection_name, ))
+        cls.path = (cls._meta.collection_name, )
 
         return cls
 
@@ -114,6 +114,10 @@ class Model(metaclass=BaseModel):
     @classmethod
     def collection_name(cls):
         return cls._meta.collection_name
+
+    @classmethod
+    def full_collection_name(cls):
+        return "/".join(cls.path)
 
     @classmethod
     def get_field(cls, name):

@@ -76,6 +76,26 @@ class TestModel(unittest.TestCase):
 
         self.assertEqual(TestModelClass.collection_name(), 'ownName')
 
+    def test_full_collection_name(self):
+        class TestModelClassParent(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+        class TestModelClass(models.Model):
+            name = models.TextField()
+            age = models.IntegerField()
+
+            class Meta:
+                collection_name = 'tmc'
+
+        tmcp = TestModelClassParent()
+        tmcp.id = 'AEX123123'
+
+        TestModelClass.set_base_path(tmcp)
+
+        self.assertEqual(TestModelClassParent.full_collection_name(), 'test_model_class_parent')
+        self.assertEqual(TestModelClass.full_collection_name(), 'test_model_class_parent/AEX123123/tmc')
+
     def test_path(self):
         class TestModelClassParent(models.Model):
             name = models.TextField()

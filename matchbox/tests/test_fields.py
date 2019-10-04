@@ -297,7 +297,7 @@ class TestReferenceField(unittest.TestCase):
         self.RefModel = type(
             'RefModel',
             (self.Model, ),
-            {'id': 'AEX1213', 'collection_name': lambda x: None}
+            {'id': 'AEX1213', 'collection_name': lambda x: None, 'full_collection_name': lambda x: None}
         )
 
     def test_lookup_value_none_returns_none(self):
