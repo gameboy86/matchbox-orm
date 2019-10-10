@@ -292,12 +292,15 @@ class TestMapField(unittest.TestCase):
 
 class TestReferenceField(unittest.TestCase):
 
+    REFMODEL_ID = 'AEX1213'
+
     def setUp(self):
         self.Model = type('Model', (), {'id': 'AEX1212'})
-        self.RefModel = type(
-            'RefModel',
-            (self.Model, ),
-            {'id': 'AEX1213', 'collection_name': lambda x: None, 'full_collection_name': lambda x: None}
+        self.RefModel = type('RefModel', (self.Model, ), {
+                'id': self.REFMODEL_ID,
+                'collection_name': lambda x: None,
+                'full_collection_name': lambda x: None
+            }
         )
 
     def test_lookup_value_none_returns_none(self):
@@ -336,4 +339,17 @@ class TestReferenceField(unittest.TestCase):
             actual = r_field.db_value(r_model_instance)
 
         self.assertEqual(expected, actual)
+
+    def test_db_value_full_collection_name_is_used(self):
+        expected_collection_name = 'full_collection_name'
+        self.RefModel.full_collection_name = lambda x: expected_collection_name
+
+        r_field = fields.ReferenceField(self.RefModel)
+        r_model_instance = self.RefModel()
+
+        new_conn = Mock()
+        with mock.patch('matchbox.database.Database.conn', new=new_conn):
+            firestore.DocumentReference = MagicMock()
+            r_field.db_value(r_model_instance)
+            firestore.DocumentReference.assert_called_with(expected_collection_name, self.REFMODEL_ID, client=new_conn)
 
