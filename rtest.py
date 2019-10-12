@@ -271,3 +271,57 @@ for a in A.objects.all():
         C.objects.delete()
     B.objects.delete()
 A.objects.delete()
+
+
+
+from matchbox import models, database
+import os
+
+database.db_initialization(os.environ['FIRESTORE'])
+
+
+class User(models.Model):
+    name = models.TextField()
+
+
+class Message(models.Model):
+    msg = models.TextField()
+    user = models.ReferenceField(User)
+
+    class Meta:
+        collection_name = 'messages'
+
+
+class Room(models.Model):
+    name = models.TextField()
+
+    class Meta:
+        collection_name = 'rooms'
+
+
+u_neo = User.objects.create(name='Neo')
+u_matrix = User.objects.create(name='Matrix')
+
+r = Room.objects.create(name='roomA')
+
+Message.set_base_path(r)
+
+m1 = Message.objects.create(user=u_neo, msg='Matrix ?')
+m2 = Message.objects.create(user=u_matrix, msg='Follow the white rabbit')
+
+assert m1.user.id == u_neo.id
+assert m2.user.id == u_matrix.id
+
+m1 = Message.objects.get(id=m1.id)
+m2 = Message.objects.get(id=m2.id)
+
+assert m1.user.id == u_neo.id
+assert m2.user.id == u_matrix.id
+
+m1.delete()
+m2.delete()
+
+r.delete()
+u_neo.delete()
+u_matrix.delete()
+
