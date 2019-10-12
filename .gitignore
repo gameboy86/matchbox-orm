@@ -10,5 +10,6 @@ dist/
 .coverage
 coverage.xml
 
-
+venv/
+wvenv/
 

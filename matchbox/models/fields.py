@@ -207,7 +207,7 @@ class ReferenceField(Field):
                 )
             )
         return firestore.DocumentReference(
-            value.collection_name(), value.id, client=db.conn
+            value.full_collection_name(), value.id, client=db.conn
         )
 
     def python_value(self, value):

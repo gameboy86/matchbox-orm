@@ -35,7 +35,7 @@ class QueryBase:
         self.model = model
 
     def get_ref(self):
-        return db.conn.collection("/".join(self.model.path))
+        return db.conn.collection(self.model.full_collection_name())
 
 
 class FilterQuery(QueryBase):
@@ -69,7 +69,7 @@ class FilterQuery(QueryBase):
 
             if isinstance(field, fields.ReferenceField):
                 vl = utils.get_reference_fields(
-                    field.ref_model.collection_name(),
+                    field.ref_model.full_collection_name(),
                     vl.id if hasattr(vl, 'id') else vl,
                 )
 
