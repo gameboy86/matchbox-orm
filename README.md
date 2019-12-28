@@ -10,7 +10,7 @@
 | Author     | Maciej Gębarski (https://github.com/gameboy86) |
 | Contact    | mgebarski@gmail.com                            |
 | License    | MIT License                                    |
-| Version    | 0.2.4                                          |
+| Version    | 0.2.6                                          |
 ## Details
 
 `Matchbox` is a Python Object-Relational Mapper for Google Firestore.
