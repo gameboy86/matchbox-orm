@@ -57,8 +57,8 @@ class Test(models.Model):
 <Test: e7aad1ec1aa449d2b53b7ca8f2853ea0>
 ```
 
-By default all fields are required (except `IDField`, `ReferenceField`). 
-This behavior can be change using attributes `blank` or `default`. 
+By default all fields are required (except `IDField`, `ReferenceField`).
+This behavior can be change using attributes `blank` or `default`.
 
 If we now save model we get:
 
@@ -79,7 +79,7 @@ Another way to create model is use manager `create` method:
 <Test: 33eba5fd53244e38aa1b4951f104ec3c>
 ```
 
-By default collection name in DB will be create based on model name. If you 
+By default collection name in DB will be create based on model name. If you
 want to change it, you can do it using Meta. For example:
 
 ```python
@@ -88,10 +88,10 @@ from matchbox import models
 class Test(models.Model):
     age = models.IntegerField()
     name = models.TextField()
-    
+
     class Meta:
         collection_name = 'TestCollection'
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -104,7 +104,7 @@ class Test(models.Model):
 #### Update
 
 
-Document can be update by two ways: override or update. 
+Document can be update by two ways: override or update.
 Example below will override whole document:
 
 ```python
@@ -141,9 +141,9 @@ If we want update only specific fields, we can use `update_fields` parameter in
 
 **Available attributes for all fields:**
  * blank (If True empty fields will save null in DB.)
- * default (If field is empty, on the save, default value will be used)
+ * default (If field is empty, on the save, default value will be used. If default value callable it will be called)
  * column_name (Name of field in DB. If empty, name of field will be used)
- 
+
 
 `TextField` accept on more attribute `max-length`.
 
@@ -163,7 +163,7 @@ class Test2(models.Model):
 
 #### IDField
 
-`IDField` is create automatically by orm. We `can't` add own, because Firestore doesn't 
+`IDField` is create automatically by orm. We `can't` add own, because Firestore doesn't
 allow for self named id field.
 
 ```python
@@ -192,7 +192,7 @@ If you change id and save, new document will be create in Firestore.
 ```python
 class TimeStampFieldExample(models.Model):
     datetimestamp = models.TimeStampField()
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -205,6 +205,24 @@ class TimeStampFieldExample(models.Model):
 
 >> TimeStampFieldExample.objects.filter(datetimestamp__lte=datetime.datetime.now()).get().datetimestamp
 datetime.datetime(2019, 5, 4, 16, 42, 34, 583953, tzinfo=datetime.timezone(datetime.timedelta(0), '+00:00'))
+```
+
+#### TimeStampField with callable default
+
+```python
+class DefaultTimeStampFieldExample(models.Model):
+    created_at = models.TimeStampField(default=datetime.datetime.now)
+
+    def __unicode__(self):
+        return self.id
+```
+```python
+>> tsf = TimeStampFieldExample.objects.create()
+>> print(tsf)
+<DefaultTimeStampFieldExample: wqAVap5rYW7Zl0cgO9UI>
+
+>> print(tsf.created_at)
+2019-11-07 08:30:10.884238+00:00
 ```
 
 #### ListField
@@ -255,12 +273,12 @@ To save GeoPoint data you must use class `GeoPointValue`
 ```python
 class GeoPointFieldExample(models.Model):
     geo_point_f = models.GeoPointField()
-    
+
     def __unicode__(self):
         return self.id
 ```
 
-```python 
+```python
 >> gpf = GeoPointFieldExample()
 >> gpf.geo_point_f = GeoPointValue(latitude=52.2297, longitude=21.0122)
 >> gpf.save()
@@ -282,14 +300,14 @@ reference to another document.
 
 class User(models.Model):
     name = models.TextField()
-    
+
     def __unicode__(self):
         return self.id
 
 class Class(models.Model):
     name = models.TextField()
     user = models.ReferenceField(User)
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -313,7 +331,7 @@ class Class(models.Model):
 ```python
     class User(models.Model):
     name = models.TextField()
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -333,14 +351,14 @@ Return all documents in collection
 ```python
 class User(models.Model):
     name = models.TextField()
-    
+
     def __unicode__(self):
         return self.id
 
 class Class(models.Model):
     name = models.TextField()
     user = models.ReferenceField(User)
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -360,7 +378,7 @@ class Class(models.Model):
 
 ##### objects.filter
 
-Filter is based on django filter method. FireStore allow following comparison, 
+Filter is based on django filter method. FireStore allow following comparison,
 with are mapped to:
 
 | FireStore | Matchbox |
@@ -378,7 +396,7 @@ class User(models.Model):
     name = models.TextField()
     evaluations = models.ListField()
     age = models.IntegerField(default=20)
-    
+
     def __unicode__(self):
        return self.id
 
@@ -425,7 +443,7 @@ You can also filter by ReferenceField
 class Class(models.Model):
     name = models.TextField()
     user = models.ReferenceField(User)
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -505,10 +523,10 @@ class Class(models.Model):
     name = models.TextField()
     user = models.ReferenceField(User)
     active = models.BooleanField()
-    
+
     a_objects = AManager()
     f_objects = DManager()
-    
+
     def __unicode__(self):
         return self.id
 ```
@@ -580,10 +598,10 @@ class SystemMaster(SuffixFsm):
 Let say we want store structure like below in firestore
 
 ```
-    (C) rooms 
-        (D) roomA 
+    (C) rooms
+        (D) roomA
         name : "my chat room"
-            (C) messages 
+            (C) messages
                 (D) message1
                 from : "alex"
                 msg : "Hello World!"
@@ -627,9 +645,9 @@ ModelClass.set_base_path(model_instance) -> model_instance must be stored in fir
 ```python
 >> r = Room.objects.create(name='roomA')
 >> Message.set_base_path(r)
->> # Wrong Room(name='roomA'); Message.set_base_path(r) 
+>> # Wrong Room(name='roomA'); Message.set_base_path(r)
 >> Message.objects.create(by='Alex', msg='Hello')
->> Message.objects.create(by='Alex', msg='How are you ?') 
+>> Message.objects.create(by='Alex', msg='How are you ?')
 
 >> r = Room.objects.create(name='roomB')
 >> Message.set_base_path(r)
@@ -661,7 +679,7 @@ To check path instance use model_path
 
 To check model path use 'path' property
 ```python
->> print(Room.path)  # ('rooms', ) 
+>> print(Room.path)  # ('rooms', )
 ```
 
 
@@ -677,7 +695,7 @@ To get all messages from 'roomB' filtered by 'by' field:
 >> print(len(list(matrix_messages)))
 1
 ```
- 
+
 Now let say, we want to delete all messages in 'roomA':
 
 ```python
@@ -697,4 +715,4 @@ Now let say, we want to delete all messages in 'roomA':
 ```
 
 `IMPORTANT`: We can't delete room (Room.objects.get(name='roomA').delete()). If we
-do this in this way, references in firestore to messages will still exist. So before deleting Collection, make sure you delete all subcollections independently from his documents. 
+do this in this way, references in firestore to messages will still exist. So before deleting Collection, make sure you delete all subcollections independently from his documents.

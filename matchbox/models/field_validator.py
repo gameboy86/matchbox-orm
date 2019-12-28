@@ -26,7 +26,11 @@ class FieldValidator:
                 )
 
         if self.default is not None and value is None:
-            value = self.default
+            # check for factory
+            if callable(self.default):
+                value = self.default()
+            else:
+                value = self.default
 
         if not self.attributes.get('blank') and value is None:
             raise AttributeError('Field {} required value'.format(f_name))

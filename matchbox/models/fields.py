@@ -118,6 +118,9 @@ class TimeStampField(Field):
         return value
 
     def python_value(self, value):
+        allow_none = self.raw_attributes.get("blank", False)
+        if allow_none and value is None:
+            return None
         return models_utils.google_datetime_to_datetime(value)
 
 

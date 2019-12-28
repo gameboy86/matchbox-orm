@@ -103,6 +103,13 @@ class TestIntegerField(unittest.TestCase):
         p_v = integer_field.python_value(100)
         self.assertEqual(p_v, 100)
 
+    def test_default_factoy(self):
+        def a():
+            return 2
+        integer_field = fields.IntegerField(default=a)
+        db_v = integer_field.lookup_value(None, None)
+        self.assertEqual(db_v, 2)
+
 
 class TestTextField(unittest.TestCase):
     def test_attributes(self):
@@ -199,6 +206,21 @@ class TestTimeStampField(unittest.TestCase):
             "'str' object has no attribute 'isoformat'",
             str(context.exception)
         )
+
+    def test_blank_field(self):
+        time_field = fields.TimeStampField(blank=True)
+        db_v = time_field.lookup_value(None, None)
+        self.assertEqual(db_v, None)
+
+        val = time_field.python_value(db_v)
+        self.assertEqual(val, None)
+
+    def test_default_factoy(self):
+        def new_datetime():
+            return datetime.datetime(2019, 1, 1, 0, 30, 30)
+        time_field = fields.TimeStampField(default=new_datetime)
+        db_v = time_field.lookup_value(None, None)
+        self.assertEqual(db_v, datetime.datetime(2019, 1, 1, 0, 30, 30))
 
 
 class TestBooleanField(unittest.TestCase):
