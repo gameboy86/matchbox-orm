@@ -10,7 +10,7 @@
 | Author     | Maciej Gębarski (https://github.com/gameboy86) |
 | Contact    | mgebarski@gmail.com                            |
 | License    | MIT License                                    |
-| Version    | 0.2.6                                          |
+| Version    | 0.2.7                                          |
 ## Details
 
 `Matchbox` is a Python Object-Relational Mapper for Google Firestore.
@@ -472,6 +472,26 @@ class Class(models.Model):
 
 >> [(u.age, u.name) for u in User.objects.all().order_by('-age').limit(2)]
 [(20, 'Michael'), (20, 'Michael')]
+```
+
+##### Paginate
+
+```python
+
+from matchbox.queries.paginator import Paginator
+
+class User(models.Model):
+    name = models.TextField()
+    age = models.IntegerField()
+
+    def __unicode__(self):
+        return self.id
+
+
+>> pag = Paginator(User.objects.filter(age__gte=10), 100)
+>> for q_data in pag:
+     print([x.name for x in q_data])  # make request for 100 documents per loop
+
 ```
 
 #### Delete

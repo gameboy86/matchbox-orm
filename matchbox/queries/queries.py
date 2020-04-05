@@ -54,6 +54,7 @@ class FilterQuery(QueryBase):
         self.select_query = kwargs
         self.n_limit = None
         self.n_order_by = []
+        self.n_start_after = None
 
     def parse_where(self):
         wheres = []
@@ -93,6 +94,8 @@ class FilterQuery(QueryBase):
                     )
                 else:
                     bsq = bsq.order_by(fo)
+        if self.n_start_after:
+            bsq = bsq.start_after(self.n_start_after)
         return bsq
 
     def raw_execute(self):
@@ -100,6 +103,10 @@ class FilterQuery(QueryBase):
 
     def limit(self, n):
         self.n_limit = n
+        return self
+
+    def start_after(self, start_after):
+        self.n_start_after = start_after
         return self
 
     def order_by(self, field):
