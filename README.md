@@ -14,7 +14,6 @@
 ## Details
 
 `Matchbox` is a Python Object-Relational Mapper for Google Firestore.
-It is in development.
 
 
 ### Installing
